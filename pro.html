@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Eccentric Stellantis Monthly Funnel Dashboard</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+:root{
+  --bg:#f4f6fb;
+  --card:#ffffff;
+  --border:#e5e7eb;
+  --border-dark:#d1d5db;
+  --text:#111827;
+  --muted:#6b7280;
+  --muted-light:#9ca3af;
+  --blue:#2563eb;
+  --blue-dark:#1d4ed8;
+  --green:#16a34a;
+  --red:#dc2626;
+  --amber:#d97706;
+  --purple:#7c3aed;
+  --radius:16px;
+  --shadow:0 10px 30px rgba(15,23,42,0.06);
+}
+
+body{
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+button,input,select{
+  font-family:inherit;
+}
+
+.topbar{
+  background:rgba(255,255,255,0.94);
+  border-bottom:1px solid var(--border);
+  padding:18px 28px;
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  align-items:center;
+  position:sticky;
+  top:0;
+  z-index:999;
+  backdrop-filter:blur(12px);
+}
+
+.title h1{
+  font-size:21px;
+  font-weight:800;
+  letter-spacing:-0.03em;
+}
+
+.title p{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.btn{
+  border:none;
+  padding:10px 15px;
+  border-radius:11px;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:700;
+  transition:0.2s ease;
+  white-space:nowrap;
+}
+
+.btn:hover{
+  transform:translateY(-1px);
+}
+
+.btn-primary{
+  background:var(--blue);
+  color:white;
+}
+
+.btn-primary:hover{
+  background:var(--blue-dark);
+}
+
+.btn-secondary{
+  background:white;
+  border:1px solid var(--border-dark);
+  color:#374151;
+}
+
+.btn-danger{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.btn-success{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.btn-disabled{
+  opacity:0.45;
+  pointer-events:none;
+}
+
+.container{
+  max-width:1440px;
+  margin:auto;
+  padding:24px;
+}
+
+.notice{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  background:#eff6ff;
+  border:1px solid #bfdbfe;
+  color:#1e40af;
+  border-radius:var(--radius);
+  padding:14px 16px;
+  margin-bottom:18px;
+  font-size:14px;
+  line-height:1.5;
+}
+
+.notice strong{
+  display:block;
+  margin-bottom:2px;
+}
+
+.filters-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  margin-bottom:20px;
+  box-shadow:var(--shadow);
+}
+
+.filters-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.filters-header h2{
+  font-size:16px;
+  letter-spacing:-0.02em;
+}
+
+.filters{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(150px,1fr));
+  gap:12px;
+}
+
+.filter-group label{
+  display:block;
+  font-size:11px;
+  text-transform:uppercase;
+  color:var(--muted);
+  font-weight:800;
+  letter-spacing:0.04em;
+  margin-bottom:6px;
+}
+
+select,input{
+  width:100%;
+  padding:10px 11px;
+  border:1px solid var(--border-dark);
+  border-radius:10px;
+  background:white;
+  color:var(--text);
+  font-size:13px;
+}
+
+select:focus,input:focus{
+  outline:2px solid rgba(37,99,235,0.16);
+  border-color:var(--blue);
+}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(180px,1fr));
+  gap:16px;
+  margin-bottom:24px;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  box-shadow:var(--shadow);
+}
+
+.card-label{
+  color:var(--muted);
+  font-size:12px;
+  text-transform:uppercase;
+  margin-bottom:9px;
+  font-weight:800;
+  letter-spacing:0.04em;
+}
+
+.card-value{
+  font-size:30px;
+  font-weight:850;
+  letter-spacing:-0.04em;
+}
+
+.card-sub{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:8px;
+}
+
+.chart-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  margin-bottom:24px;
+}
+
+.chart-card,.section{
+  background:white;
+  border-radius:var(--radius);
+  border:1px solid var(--border);
+  padding:20px;
+  box-shadow:var(--shadow);
+}
+
+.chart-card h3,.section h2{
+  margin-bottom:16px;
+  font-size:17px;
+  letter-spacing:-0.02em;
+}
+
+.chart-wrap{
+  height:310px;
+}
+
+.section{
+  margin-bottom:24px;
+}
+
+.funnel{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(120px,1fr));
+  gap:12px;
+  overflow:auto;
+}
+
+.funnel-stage{
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px;
+  background:#fafafa;
+  min-width:120px;
+}
+
+.funnel-value{
+  font-weight:850;
+  font-size:20px;
+  letter-spacing:-0.03em;
+}
+
+.funnel-label{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.funnel-progress{
+  height:8px;
+  background:#e5e7eb;
+  border-radius:999px;
+  margin-top:12px;
+  overflow:hidden;
+}
+
+.funnel-fill{
+  height:100%;
+  background:var(--blue);
+  border-radius:999px;
+}
+
+.funnel-rate{
+  margin-top:9px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.insight-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+
+.insight{
+  background:#f9fafb;
+  border:1px solid var(--border);
+  border-left:4px solid var(--blue);
+  padding:14px;
+  border-radius:12px;
+  line-height:1.55;
+  font-size:14px;
+}
+
+.table-toolbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+}
+
+.table-toolbar p{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.table-wrap{
+  overflow:auto;
+  border:1px solid var(--border);
+  border-radius:14px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1180px;
+}
+
+th{
+  background:#f9fafb;
+  text-align:left;
+  padding:12px;
+  font-size:12px;
+  border-bottom:1px solid var(--border);
+  color:#374151;
+  white-space:nowrap;
+}
+
+td{
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+  font-size:13px;
+  white-space:nowrap;
+}
+
+tr:hover td{
+  background:#fafafa;
+}
+
+.readonly-cell{
+  color:#111827;
+}
+
+.edit-cell input{
+  min-width:100px;
+}
+
+.small-btn{
+  padding:7px 10px;
+  border:none;
+  border-radius:9px;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:700;
+}
+
+.delete-btn{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.status-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+}
+
+.locked{
+  background:#f3f4f6;
+  color:#374151;
+}
+
+.editing{
+  background:#fff7ed;
+  color:#9a3412;
+}
+
+.empty-state{
+  text-align:center;
+  padding:40px;
+  color:var(--muted);
+}
+
+@media(max-width:1100px){
+  .filters{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .cards{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .insight-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:900px){
+  .topbar{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .chart-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:620px){
+  .container{
+    padding:16px;
+  }
+
+  .filters,.cards{
+    grid-template-columns:1fr;
+  }
+
+  .actions{
+    width:100%;
+  }
+
+  .btn{
+    flex:1;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="title">
+    <h1>Eccentric Stellantis Monthly Funnel Dashboard</h1>
+    <p>Automotive funnel analytics. View-only by default to avoid accidental edits.</p>
+  </div>
+
+  <div class="actions">
+    <button id="editToggleBtn" class="btn btn-secondary" onclick="enableEditMode()">Unlock Edit Mode</button>
+    <button id="addRowBtn" class="btn btn-secondary btn-disabled" onclick="addRow()">+ Add Row</button>
+    <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+    <button class="btn btn-secondary" onclick="exportJSON()">Export JSON</button>
+    <label id="importBtn" class="btn btn-secondary btn-disabled">
+      Import CSV
+      <input type="file" hidden accept=".csv" onchange="importCSV(event)">
+    </label>
+    <button id="cancelBtn" class="btn btn-danger btn-disabled" onclick="cancelEdits()">Cancel</button>
+    <button id="saveBtn" class="btn btn-primary btn-disabled" onclick="saveData()">Save Changes</button>
+  </div>
+</header>
+
+<main class="container">
+
+  <div id="modeNotice" class="notice">
+    <div>
+      <strong>Dashboard is locked</strong>
+      Data editing, delete, add row, and import are disabled until Edit Mode is unlocked.
+    </div>
+    <span id="modePill" class="status-pill locked">Locked</span>
+  </div>
+
+  <section class="filters-card">
+    <div class="filters-header">
+      <h2>Filters</h2>
+      <button class="btn btn-secondary" onclick="resetFilters()">Reset Filters</button>
+    </div>
+
+    <div class="filters">
+      <div class="filter-group">
+        <label for="brandFilter">Brand</label>
+        <select id="brandFilter" onchange="renderDashboard(false)">
+          <option value="all">All Brands</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="countryFilter">Country</label>
+        <select id="countryFilter" onchange="renderDashboard(false)">
+          <option value="all">All Countries</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="monthFromFilter">Month From</label>
+        <select id="monthFromFilter" onchange="renderDashboard(false)">
+          <option value="all">All Months</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="monthToFilter">Month To</label>
+        <select id="monthToFilter" onchange="renderDashboard(false)">
+          <option value="all">All Months</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="searchFilter">Search</label>
+        <input id="searchFilter" placeholder="Search brand/country/month" oninput="renderDashboard(false)">
+      </div>
+    </div>
+  </section>
+
+  <section class="cards" id="kpiCards"></section>
+
+  <section class="chart-grid">
+    <div class="chart-card">
+      <h3>Website Traffic Trend</h3>
+      <div class="chart-wrap">
+        <canvas id="trafficChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Lead Trend</h3>
+      <div class="chart-wrap">
+        <canvas id="leadsChart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Conversion Funnel</h2>
+    <div id="funnel" class="funnel"></div>
+  </section>
+
+  <section class="section">
+    <h2>Auto Insights</h2>
+    <div id="insights" class="insight-grid"></div>
+  </section>
+
+  <section class="section">
+    <div class="table-toolbar">
+      <div>
+        <h2 style="margin-bottom:6px">Data Table</h2>
+        <p id="tableHelp">View-only table. Unlock Edit Mode to modify dashboard data.</p>
+      </div>
+      <span id="rowCount" class="status-pill locked">0 Rows</span>
+    </div>
+
+    <div class="table-wrap">
+      <table id="dataTable"></table>
+    </div>
+  </section>
+
+</main>
+
+<script>
+let charts = {};
+let isEditMode = false;
+
+const STORAGE_KEY = "eccentric_dashboard_data_v2";
+
+const DEFAULT_DATA = [
+  {
+    month:"2024-01",
+    brand:"Jeep",
+    country:"UAE",
+    website_traffic:42000,
+    product_page_traffic:18000,
+    loader_start:9000,
+    loader_end:6000,
+    feature_interactions:5000,
+    intent_test_drive:420,
+    leads:180,
+    avg_engagement_time_sec:190
+  },
+  {
+    month:"2024-02",
+    brand:"Jeep",
+    country:"UAE",
+    website_traffic:46000,
+    product_page_traffic:21000,
+    loader_start:10000,
+    loader_end:7200,
+    feature_interactions:5800,
+    intent_test_drive:510,
+    leads:220,
+    avg_engagement_time_sec:205
+  },
+  {
+    month:"2024-01",
+    brand:"Peugeot",
+    country:"KSA",
+    website_traffic:25000,
+    product_page_traffic:10000,
+    loader_start:4800,
+    loader_end:3200,
+    feature_interactions:2400,
+    intent_test_drive:220,
+    leads:95,
+    avg_engagement_time_sec:170
+  }
+];
+
+let DATA = JSON.parse(localStorage.getItem(STORAGE_KEY)) || structuredClone(DEFAULT_DATA);
+let DRAFT_DATA = structuredClone(DATA);
+
+const FIELDS = [
+  "month",
+  "brand",
+  "country",
+  "website_traffic",
+  "product_page_traffic",
+  "loader_start",
+  "loader_end",
+  "feature_interactions",
+  "intent_test_drive",
+  "leads",
+  "avg_engagement_time_sec"
+];
+
+const FIELD_LABELS = {
+  month:"Month",
+  brand:"Brand",
+  country:"Country",
+  website_traffic:"Traffic",
+  product_page_traffic:"Product Page",
+  loader_start:"Loader Start",
+  loader_end:"Loader End",
+  feature_interactions:"Feature Interactions",
+  intent_test_drive:"Test Drive Intent",
+  leads:"Leads",
+  avg_engagement_time_sec:"Avg Eng. Time"
+};
+
+function activeData(){
+  return isEditMode ? DRAFT_DATA : DATA;
+}
+
+function enableEditMode(){
+  if(isEditMode) return;
+
+  const passcode = prompt("Enter admin passcode to unlock editing:");
+
+  if(passcode !== "admin123"){
+    alert("Incorrect passcode. Dashboard remains locked.");
+    return;
+  }
+
+  isEditMode = true;
+  DRAFT_DATA = structuredClone(DATA);
+  updateModeUI();
+  renderDashboard();
+}
+
+function updateModeUI(){
+  const modeNotice = document.getElementById("modeNotice");
+  const modePill = document.getElementById("modePill");
+  const tableHelp = document.getElementById("tableHelp");
+
+  document.getElementById("editToggleBtn").classList.toggle("btn-disabled", isEditMode);
+  document.getElementById("addRowBtn").classList.toggle("btn-disabled", !isEditMode);
+  document.getElementById("importBtn").classList.toggle("btn-disabled", !isEditMode);
+  document.getElementById("cancelBtn").classList.toggle("btn-disabled", !isEditMode);
+  document.getElementById("saveBtn").classList.toggle("btn-disabled", !isEditMode);
+
+  if(isEditMode){
+    modeNotice.innerHTML = `
+      <div>
+        <strong>Edit Mode is active</strong>
+        Changes are temporary until you click Save Changes. Use Cancel to discard all edits.
+      </div>
+      <span id="modePill" class="status-pill editing">Editing</span>
+    `;
+    tableHelp.textContent = "You are editing a draft. Save Changes only after reviewing the table.";
+  }else{
+    modeNotice.innerHTML = `
+      <div>
+        <strong>Dashboard is locked</strong>
+        Data editing, delete, add row, and import are disabled until Edit Mode is unlocked.
+      </div>
+      <span id="modePill" class="status-pill locked">Locked</span>
+    `;
+    tableHelp.textContent = "View-only table. Unlock Edit Mode to modify dashboard data.";
+  }
+}
+
+function saveData(){
+  if(!isEditMode) return;
+
+  if(!confirm("Save all changes to this dashboard?")) return;
+
+  DATA = structuredClone(DRAFT_DATA);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+  isEditMode = false;
+  updateModeUI();
+  renderDashboard();
+  alert("Changes saved successfully.");
+}
+
+function cancelEdits(){
+  if(!isEditMode) return;
+
+  if(!confirm("Discard all unsaved changes?")) return;
+
+  DRAFT_DATA = structuredClone(DATA);
+  isEditMode = false;
+  updateModeUI();
+  renderDashboard();
+}
+
+function populateFilters(preserve=true){
+  const data = activeData();
+
+  const current = preserve ? {
+    brand:document.getElementById("brandFilter").value,
+    country:document.getElementById("countryFilter").value,
+    from:document.getElementById("monthFromFilter").value,
+    to:document.getElementById("monthToFilter").value
+  } : {brand:"all", country:"all", from:"all", to:"all"};
+
+  const brands = [...new Set(data.map(d=>d.brand).filter(Boolean))].sort();
+  const countries = [...new Set(data.map(d=>d.country).filter(Boolean))].sort();
+  const months = [...new Set(data.map(d=>d.month).filter(Boolean))].sort();
+
+  setOptions("brandFilter", brands, "All Brands", current.brand);
+  setOptions("countryFilter", countries, "All Countries", current.country);
+  setOptions("monthFromFilter", months, "All Months", current.from);
+  setOptions("monthToFilter", months, "All Months", current.to);
+}
+
+function setOptions(id, values, allLabel, selected){
+  const element = document.getElementById(id);
+  element.innerHTML = `<option value="all">${allLabel}</option>` + values.map(v=>`<option value="${escapeHTML(v)}">${escapeHTML(v)}</option>`).join("");
+
+  if([...element.options].some(o=>o.value === selected)){
+    element.value = selected;
+  }else{
+    element.value = "all";
+  }
+}
+
+function resetFilters(){
+  document.getElementById("brandFilter").value = "all";
+  document.getElementById("countryFilter").value = "all";
+  document.getElementById("monthFromFilter").value = "all";
+  document.getElementById("monthToFilter").value = "all";
+  document.getElementById("searchFilter").value = "";
+  renderDashboard(false);
+}
+
+function getFilteredData(){
+  const data = activeData();
+  const brand = document.getElementById("brandFilter").value;
+  const country = document.getElementById("countryFilter").value;
+  const from = document.getElementById("monthFromFilter").value;
+  const to = document.getElementById("monthToFilter").value;
+  const search = document.getElementById("searchFilter").value.toLowerCase().trim();
+
+  return data.filter(d=>{
+    if(brand !== "all" && d.brand !== brand) return false;
+    if(country !== "all" && d.country !== country) return false;
+    if(from !== "all" && d.month < from) return false;
+    if(to !== "all" && d.month > to) return false;
+
+    if(search){
+      const haystack = `${d.month} ${d.brand} ${d.country}`.toLowerCase();
+      if(!haystack.includes(search)) return false;
+    }
+
+    return true;
+  }).sort((a,b)=>a.month.localeCompare(b.month));
+}
+
+function renderKPIs(rows){
+  const traffic = sum(rows,"website_traffic");
+  const product = sum(rows,"product_page_traffic");
+  const loaderStart = sum(rows,"loader_start");
+  const loaderEnd = sum(rows,"loader_end");
+  const td = sum(rows,"intent_test_drive");
+  const leads = sum(rows,"leads");
+
+  const leadCr = traffic ? ((leads / traffic) * 100).toFixed(2) : "0.00";
+  const loaderCompletion = loaderStart ? ((loaderEnd / loaderStart) * 100).toFixed(1) : "0.0";
+  const productRate = traffic ? ((product / traffic) * 100).toFixed(1) : "0.0";
+
+  document.getElementById("kpiCards").innerHTML = `
+    ${kpiCard("Website Traffic", format(traffic), `${productRate}% reached product pages`)}
+    ${kpiCard("Product Page Traffic", format(product), "Vehicle interest volume")}
+    ${kpiCard("Loader Completion", `${loaderCompletion}%`, `${format(loaderEnd)} completed from ${format(loaderStart)} starts`)}
+    ${kpiCard("Leads", format(leads), `${leadCr}% traffic to lead conversion`)}
+    ${kpiCard("Test Drive Intent", format(td), "High-intent users")}
+    ${kpiCard("Lead Conversion", `${leadCr}%`, "Leads / website traffic")}
+    ${kpiCard("Loader Drop-off", `${(100 - Number(loaderCompletion)).toFixed(1)}%`, "Users who did not complete loader")}
+    ${kpiCard("Avg Engagement", `${avg(rows,"avg_engagement_time_sec").toFixed(0)}s`, "Average engagement time")}
+  `;
+}
+
+function kpiCard(label,value,sub){
+  return `
+    <div class="card">
+      <div class="card-label">${label}</div>
+      <div class="card-value">${value}</div>
+      <div class="card-sub">${sub}</div>
+    </div>
+  `;
+}
+
+function renderCharts(rows){
+  Object.values(charts).forEach(c=>c.destroy());
+
+  const grouped = groupByMonth(rows);
+  const labels = Object.keys(grouped).sort();
+
+  charts.traffic = new Chart(document.getElementById("trafficChart"),{
+    type:"line",
+    data:{
+      labels,
+      datasets:[{
+        label:"Website Traffic",
+        data:labels.map(m=>grouped[m].website_traffic),
+        borderWidth:3,
+        tension:0.35
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true}}
+    }
+  });
+
+  charts.leads = new Chart(document.getElementById("leadsChart"),{
+    type:"bar",
+    data:{
+      labels,
+      datasets:[{
+        label:"Leads",
+        data:labels.map(m=>grouped[m].leads),
+        borderWidth:1
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true}}
+    }
+  });
+}
+
+function renderFunnel(rows){
+  const traffic = sum(rows,"website_traffic");
+
+  const stages = [
+    ["Traffic", traffic],
+    ["Product Page", sum(rows,"product_page_traffic")],
+    ["Loader Start", sum(rows,"loader_start")],
+    ["Loader End", sum(rows,"loader_end")],
+    ["Feature", sum(rows,"feature_interactions")],
+    ["Test Drive", sum(rows,"intent_test_drive")],
+    ["Leads", sum(rows,"leads")]
+  ];
+
+  if(!traffic){
+    document.getElementById("funnel").innerHTML = `<div class="empty-state">No funnel data available for selected filters.</div>`;
+    return;
+  }
+
+  document.getElementById("funnel").innerHTML = stages.map(([label,value])=>{
+    const rate = traffic ? ((value / traffic) * 100).toFixed(1) : "0.0";
+    return `
+      <div class="funnel-stage">
+        <div class="funnel-value">${format(value)}</div>
+        <div class="funnel-label">${label}</div>
+        <div class="funnel-progress">
+          <div class="funnel-fill" style="width:${Math.min(rate,100)}%"></div>
+        </div>
+        <div class="funnel-rate">${rate}% of traffic</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderInsights(rows){
+  const traffic = sum(rows,"website_traffic");
+  const product = sum(rows,"product_page_traffic");
+  const loaderStart = sum(rows,"loader_start");
+  const loaderEnd = sum(rows,"loader_end");
+  const leads = sum(rows,"leads");
+  const td = sum(rows,"intent_test_drive");
+
+  const leadCr = traffic ? ((leads / traffic) * 100).toFixed(2) : "0.00";
+  const productRate = traffic ? ((product / traffic) * 100).toFixed(1) : "0.0";
+  const loaderDrop = loaderStart ? (((loaderStart-loaderEnd) / loaderStart) * 100).toFixed(1) : "0.0";
+  const tdToLead = td ? ((leads / td) * 100).toFixed(1) : "0.0";
+
+  document.getElementById("insights").innerHTML = `
+    <div class="insight">Overall traffic-to-lead conversion is <strong>${leadCr}%</strong>.</div>
+    <div class="insight"><strong>${productRate}%</strong> of website traffic reached product pages.</div>
+    <div class="insight">Loader drop-off is <strong>${loaderDrop}%</strong>. Review load time and 3D start experience if this is high.</div>
+    <div class="insight">Test-drive-to-lead conversion is <strong>${tdToLead}%</strong>.</div>
+    <div class="insight">Total leads generated: <strong>${format(leads)}</strong>.</div>
+    <div class="insight">Average engagement time is <strong>${avg(rows,"avg_engagement_time_sec").toFixed(0)} seconds</strong>.</div>
+  `;
+}
+
+function renderTable(){
+  const data = activeData();
+  const table = document.getElementById("dataTable");
+  document.getElementById("rowCount").textContent = `${data.length} Rows`;
+
+  table.innerHTML = `
+    <thead>
+      <tr>
+        ${FIELDS.map(f=>`<th>${FIELD_LABELS[f]}</th>`).join("")}
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${data.map((row,index)=>renderTableRow(row,index)).join("")}
+    </tbody>
+  `;
+}
+
+function renderTableRow(row,index){
+  return `
+    <tr>
+      ${FIELDS.map(field=>{
+        if(isEditMode){
+          const type = ["month","brand","country"].includes(field) ? "text" : "number";
+          return `
+            <td class="edit-cell">
+              <input type="${type}" value="${escapeHTML(row[field])}" onchange="updateField(${index},'${field}',this.value)">
+            </td>
+          `;
+        }
+
+        return `<td class="readonly-cell">${formatCell(field,row[field])}</td>`;
+      }).join("")}
+      <td>
+        <button class="small-btn delete-btn ${isEditMode ? "" : "btn-disabled"}" onclick="deleteRow(${index})">Delete</button>
+      </td>
+    </tr>
+  `;
+}
+
+function updateField(index, field, value){
+  if(!isEditMode) return;
+
+  if(!["month","brand","country"].includes(field)){
+    value = Number(value || 0);
+    if(value < 0) value = 0;
+  }
+
+  DRAFT_DATA[index][field] = value;
+  renderDashboard();
+}
+
+function addRow(){
+  if(!isEditMode) return;
+
+  DRAFT_DATA.push({
+    month:new Date().toISOString().slice(0,7),
+    brand:"New Brand",
+    country:"UAE",
+    website_traffic:0,
+    product_page_traffic:0,
+    loader_start:0,
+    loader_end:0,
+    feature_interactions:0,
+    intent_test_drive:0,
+    leads:0,
+    avg_engagement_time_sec:0
+  });
+
+  renderDashboard();
+}
+
+function deleteRow(index){
+  if(!isEditMode) return;
+
+  if(confirm("Delete this row from the draft data?")){
+    DRAFT_DATA.splice(index,1);
+    renderDashboard();
+  }
+}
+
+function exportJSON(){
+  const blob = new Blob([JSON.stringify(activeData(),null,2)], {type:"application/json"});
+  downloadBlob(blob,"eccentric-stellantis-dashboard-data.json");
+}
+
+function exportCSV(){
+  const data = activeData();
+  if(!data.length){
+    alert("No data available to export.");
+    return;
+  }
+
+  const csv = [
+    FIELDS.join(","),
+    ...data.map(row=>FIELDS.map(h=>csvEscape(row[h])).join(","))
+  ].join("\n");
+
+  const blob = new Blob([csv], {type:"text/csv"});
+  downloadBlob(blob,"eccentric-stellantis-dashboard-data.csv");
+}
+
+function importCSV(event){
+  if(!isEditMode) return;
+
+  const file = event.target.files[0];
+  if(!file) return;
+
+  if(!confirm("Importing CSV will replace the current draft data. Continue?")){
+    event.target.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = function(e){
+    const text = e.target.result.trim();
+    const lines = text.split(/\r?\n/).filter(Boolean);
+    const headers = splitCSVLine(lines[0]).map(h=>h.trim());
+
+    const missing = FIELDS.filter(f=>!headers.includes(f));
+    if(missing.length){
+      alert("CSV import failed. Missing columns: " + missing.join(", "));
+      return;
+    }
+
+    DRAFT_DATA = lines.slice(1).map(line=>{
+      const values = splitCSVLine(line);
+      const obj = {};
+
+      headers.forEach((h,i)=>{
+        let val = values[i] ?? "";
+        if(!["month","brand","country"].includes(h)) val = Number(val || 0);
+        obj[h] = val;
+      });
+
+      return obj;
+    });
+
+    renderDashboard();
+  };
+
+  reader.readAsText(file);
+}
+
+function renderDashboard(rebuildFilters=true){
+  if(rebuildFilters) populateFilters(true);
+  const rows = getFilteredData();
+  renderKPIs(rows);
+  renderCharts(rows);
+  renderFunnel(rows);
+  renderInsights(rows);
+  renderTable();
+}
+
+function groupByMonth(rows){
+  return rows.reduce((acc,row)=>{
+    if(!acc[row.month]){
+      acc[row.month] = {
+        website_traffic:0,
+        leads:0
+      };
+    }
+    acc[row.month].website_traffic += Number(row.website_traffic || 0);
+    acc[row.month].leads += Number(row.leads || 0);
+    return acc;
+  },{});
+}
+
+function sum(rows,field){
+  return rows.reduce((a,b)=>a + Number(b[field] || 0),0);
+}
+
+function avg(rows,field){
+  if(!rows.length) return 0;
+  return sum(rows,field) / rows.length;
+}
+
+function format(n){
+  n = Number(n || 0);
+  if(n >= 1000000) return (n/1000000).toFixed(1) + "M";
+  if(n >= 1000) return (n/1000).toFixed(1) + "K";
+  return n.toLocaleString();
+}
+
+function formatCell(field,value){
+  if(["month","brand","country"].includes(field)) return escapeHTML(value);
+  if(field === "avg_engagement_time_sec") return `${Number(value || 0).toLocaleString()}s`;
+  return Number(value || 0).toLocaleString();
+}
+
+function escapeHTML(value){
+  return String(value ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function csvEscape(value){
+  const str = String(value ?? "");
+  if(/[",\n]/.test(str)) return `"${str.replaceAll('"','""')}"`;
+  return str;
+}
+
+function splitCSVLine(line){
+  const result = [];
+  let current = "";
+  let insideQuotes = false;
+
+  for(let i=0;i<line.length;i++){
+    const char = line[i];
+    const next = line[i+1];
+
+    if(char === '"' && insideQuotes && next === '"'){
+      current += '"';
+      i++;
+    }else if(char === '"'){
+      insideQuotes = !insideQuotes;
+    }else if(char === "," && !insideQuotes){
+      result.push(current);
+      current = "";
+    }else{
+      current += char;
+    }
+  }
+
+  result.push(current);
+  return result;
+}
+
+function downloadBlob(blob,filename){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+updateModeUI();
+renderDashboard();
+</script>
+
+</body>
+</html>
